@@ -1,1 +1,8 @@
 .codegraph
+node_modules
+dist
+coverage
+*.tsbuildinfo
+src/generated
+.env*
+!.env.example

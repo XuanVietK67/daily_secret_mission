@@ -1,0 +1,27 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# The worker and Key Value services join when the evaluation feature lands (docs/architecture.md).
+services:
+  - type: web
+    name: dsm-api
+    runtime: node
+    region: singapore
+    plan: free
+    # pnpm comes from package.json#packageManager via corepack. NODE_ENV stays unset during the build
+    # so pnpm installs the devDependencies (Nest CLI, Prisma CLI) the build needs.
+    # ponytail: the free plan has no preDeployCommand, so migrations run at the end of the build;
+    # move `corepack pnpm db:deploy` to preDeployCommand once the service is on a paid plan.
+    buildCommand: corepack pnpm install --frozen-lockfile && corepack pnpm build && corepack pnpm db:deploy
+    startCommand: NODE_ENV=production node dist/main
+    healthCheckPath: /v1/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: LOG_LEVEL
+        value: info
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
