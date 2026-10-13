@@ -25,12 +25,14 @@ erDiagram
 | Column | Notes |
 |---|---|
 | `id` | = Supabase Auth user id (`sub`). Created on first authenticated request. |
-| `self_assessed_level` | enum `basic` · `intermediate` · `advanced` (an estimate, never a fixed label) |
+| `self_assessed_level` | enum `basic` · `intermediate` · `advanced` (an estimate, never a fixed label); NULL until onboarding |
 | `goal` | free text, nullable |
 | `senses_per_mission` | int, default 5, CHECK between configured min and max |
 | `default_mode` | enum `quick` · `daily` · `deep`, default `daily` |
-| `time_zone` | IANA name, e.g. `Asia/Ho_Chi_Minh` |
+| `time_zone` | IANA name, e.g. `Asia/Ho_Chi_Minh`; NULL until onboarding (never defaulted: a wrong zone would write wrong local dates into history) |
 | `expo_push_token` | nullable |
+
+A Learner is **onboarded** once `self_assessed_level` and `time_zone` are both set. Both can be changed but never cleared.
 
 ### `headword`, `sense`
 `headword(id, text, normalized_text UNIQUE)`
