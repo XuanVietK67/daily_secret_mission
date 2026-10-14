@@ -12,7 +12,7 @@ Every choice below was made for one constraint: **one developer shipping an MVP*
 | Validation | **class-validator + class-transformer** (global `ValidationPipe`) | Idiomatic NestJS DTOs; `@nestjs/swagger` reads them to produce OpenAPI. |
 | API contract | **REST + OpenAPI** via `@nestjs/swagger` (CLI plugin on) | The Expo app consumes a client generated from the OpenAPI spec (e.g. `openapi-typescript`), so the API stays the single source of truth. |
 | Database | **PostgreSQL on Supabase** | Managed, with backups and a free tier. Postgres constraints (partial unique indexes, CHECKs) enforce the rules that must never break. |
-| ORM | **Prisma** | Typed client, migrations and Studio. Partial indexes and CHECK constraints go in hand-edited SQL migrations. |
+| ORM | **Prisma 7** with the `@prisma/adapter-pg` driver adapter | Typed client, migrations and Studio. Partial indexes and CHECK constraints go in hand-edited SQL migrations. |
 | Auth | **Supabase Auth** | Expo SDK for sign-in; the API only verifies JWTs against Supabase's JWKS (`jose`). See [ADR 0002](adr/0002-supabase-as-infrastructure-only.md). |
 | Object storage | **Supabase Storage** (private bucket) | Audio goes straight from the device to a signed upload URL; the API never proxies bytes. |
 | Background jobs | **BullMQ + Redis** via `@nestjs/bullmq` | Retries and backoff for the evaluation pipeline; job schedulers for cleanup. See [ADR 0003](adr/0003-async-evaluation-on-bullmq-worker.md). |
@@ -24,8 +24,9 @@ Every choice below was made for one constraint: **one developer shipping an MVP*
 | Logging | `nestjs-pino` (JSON logs) | Structured logs that Render's log stream can search. |
 | Rate limiting | `@nestjs/throttler` | Caps AI-cost endpoints (submissions, sense drafts) per Learner. |
 | Health | `@nestjs/terminus` | `/v1/health` checks DB + Redis for Render's health check. |
-| Testing | **Jest + Supertest** (NestJS default) | Unit tests for pure rules; e2e tests turn PRD AC-01…AC-14 into executable checks. |
-| Lint / format | ESLint + Prettier (NestJS defaults), `tsc --noEmit` | Run before every commit. |
+| Testing | **Vitest + Supertest** (NestJS 12 default) | Unit tests for pure rules; e2e tests turn PRD AC-01…AC-14 into executable checks. |
+| Lint / format | oxlint (type-aware) + Prettier (NestJS 12 defaults), `tsc --noEmit` | Run before every commit. |
+| Module format | ESM (`nodenext`), TypeScript 6 | What NestJS 12 scaffolds; TypeScript stays on 6.x until the Nest CLI, swagger plugin and linters support 7. |
 | CI | GitHub Actions | lint → typecheck → test on every PR. |
 
 ## AI integration details

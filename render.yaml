@@ -1,0 +1,25 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# The worker and Key Value services join when the evaluation feature lands (docs/architecture.md).
+services:
+  - type: web
+    name: dsm-api
+    runtime: node
+    region: singapore
+    plan: free
+    # Node version comes from .nvmrc. NODE_ENV stays unset during the build
+    # so npm installs the devDependencies (Nest CLI, Prisma CLI) the build needs.
+    # ponytail: the free plan has no preDeployCommand, so migrations run at the end of the build;
+    # move `npm run db:deploy` to preDeployCommand once the service is on a paid plan.
+    buildCommand: npm ci && npm run build && npm run db:deploy
+    startCommand: NODE_ENV=production node dist/main
+    healthCheckPath: /v1/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
