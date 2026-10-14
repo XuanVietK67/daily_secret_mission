@@ -29,14 +29,13 @@ jobs:
       SUPABASE_URL: http://localhost:54321
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
       # Applies migrations to the CI database first (test/global-setup.ts).
-      - run: pnpm test:e2e
+      - run: npm run test:e2e

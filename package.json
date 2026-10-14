@@ -4,9 +4,11 @@
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
-  "packageManager": "pnpm@12.11.2",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=22.12 <23"
+  },
+  "scarfSettings": {
+    "enabled": false
   },
   "scripts": {
     "postinstall": "prisma generate",
@@ -44,7 +46,7 @@
     "@nestjs/schematics": "12.0.7",
     "@nestjs/testing": "12.1.2",
     "@types/express": "5.0.6",
-    "@types/node": "24.19.2",
+    "@types/node": "22.20.5",
     "@types/supertest": "7.2.1",
     "dotenv": "18.0.7",
     "oxlint": "1.87.0",
