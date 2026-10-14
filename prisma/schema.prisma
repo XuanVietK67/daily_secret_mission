@@ -1,0 +1,40 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SelfAssessedLevel {
+  basic
+  intermediate
+  advanced
+
+  @@map("self_assessed_level")
+}
+
+enum MissionMode {
+  quick
+  daily
+  deep
+
+  @@map("mission_mode")
+}
+
+/// Created on the first authenticated request. Level and time zone stay null until onboarding.
+model Learner {
+  id                String             @id @db.Uuid
+  selfAssessedLevel SelfAssessedLevel? @map("self_assessed_level")
+  goal              String?
+  sensesPerMission  Int                @default(5) @map("senses_per_mission")
+  defaultMode       MissionMode        @default(daily) @map("default_mode")
+  timeZone          String?            @map("time_zone")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("learner")
+}

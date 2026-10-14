@@ -1,0 +1,11 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# Local-only Auth signing key: pnpm supabase gen signing-key --algorithm ES256 > supabase/signing_keys.json
+signing_keys.json
