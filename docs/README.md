@@ -13,6 +13,7 @@ Backend design for the MVP described in the PRD ([VI](../Daily_Secret_Mission_PR
 7. [privacy.md](privacy.md): data inventory, processors, deletion, release blockers.
 8. [project-setup.md](project-setup.md): repo layout, env, local dev, testing, CI/CD, conventions.
 9. [lexicon-data.md](lexicon-data.md): the fields the Admin fills and how to load the Lexicon.
+10. [roadmap.md](roadmap.md): the MVP as phases, one feature per PR, and which acceptance criteria each covers.
 ## Decisions (ADRs)
 
 | # | Decision |
