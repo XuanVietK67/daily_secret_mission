@@ -21,7 +21,7 @@ Every choice below was made for one constraint: **one developer shipping an MVP*
 | Push notifications | **Expo Push Service** (`expo-server-sdk`) | "Feedback ready" and streak reminders without running APNs/FCM ourselves. |
 | Hosting | **Render**: web service (API), background worker, Key Value (Redis) | All three in one place; deploys from GitHub via `render.yaml`. Postgres stays on Supabase. |
 | Config | `@nestjs/config` + class-validator env schema | The app refuses to boot with missing or invalid env. |
-| Logging | `nestjs-pino` (JSON logs) | Structured logs that Render's log stream can search. |
+| Logging | `nestjs-pino` (JSON logs; `pino-pretty` when `NODE_ENV=development`) | Structured logs that Render's log stream can search. |
 | Rate limiting | `@nestjs/throttler` | Caps AI-cost endpoints (submissions, sense drafts) per Learner. |
 | Health | `@nestjs/terminus` | `/v1/health` checks DB + Redis for Render's health check. |
 | Testing | **Vitest + Supertest** (NestJS 12 default) | Unit tests for pure rules; e2e tests turn PRD AC-01…AC-14 into executable checks. |

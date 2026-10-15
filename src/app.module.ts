@@ -23,6 +23,17 @@ import { PrismaModule } from './prisma/prisma.module.js';
         pinoHttp: {
           level: config.get('LOG_LEVEL', { infer: true }),
           redact: ['req.headers.authorization'],
+          // Readable one-liners locally; JSON elsewhere so Render's log stream can search it.
+          transport:
+            config.get('NODE_ENV', { infer: true }) === 'development'
+              ? {
+                  target: 'pino-pretty',
+                  options: {
+                    singleLine: true,
+                    ignore: 'pid,hostname,req.headers,res.headers',
+                  },
+                }
+              : undefined,
         },
       }),
     }),
