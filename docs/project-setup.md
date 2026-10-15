@@ -8,15 +8,11 @@ How the backend repository is laid out, configured, run and shipped. The walking
 daily_secret_mission/
 ├── CONTEXT.md                  # domain glossary: use these words in code
 ├── docs/                       # this folder
-├── lexicon/                    # Admin-curated Senses (ADR 0004) (later)
-│   └── *.json
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/
 ├── prisma.config.ts            # migrate uses DIRECT_URL; loads .env.test when NODE_ENV=test
 ├── supabase/                   # local stack config (`pnpm supabase start`)
-├── scripts/
-│   └── lexicon-import.ts       # (later)
 ├── src/
 │   ├── main.ts                 # HTTP entrypoint
 │   ├── worker.ts               # BullMQ worker entrypoint (no HTTP) (later: evaluation feature)
@@ -78,7 +74,6 @@ Prisma 7: `schema.prisma` has no URL; `prisma.config.ts` gives migrations `DIREC
 | `pnpm lint` / `pnpm format` / `pnpm typecheck` | oxlint (type-aware) / Prettier / `tsc --noEmit` |
 | `pnpm test` / `pnpm test:e2e` | Vitest unit / e2e |
 | `pnpm db:migrate` / `pnpm db:deploy` | `prisma migrate dev` / `prisma migrate deploy` |
-| `pnpm lexicon:import` *(later)* | Validate `lexicon/*.json` and upsert into the DB |
 
 `postinstall` runs `prisma generate`. pnpm only runs dependency build scripts listed under `allowBuilds` in `pnpm-workspace.yaml`; approve new ones with `pnpm approve-builds`.
 
@@ -95,28 +90,9 @@ Prerequisites: Node 24 LTS (`.nvmrc`), pnpm via `corepack enable` (version pinne
 
 When the worker lands, local dev also needs Redis: `docker run -d --name dsm-redis -p 6379:6379 redis:7 --maxmemory-policy noeviction`.
 
-## Lexicon files
+## Lexicon data
 
-One JSON array per file, any grouping (topic, batch). `key` is permanent: it ties progress to the Sense.
-
-```json
-[
-  {
-    "key": "run.v.manage",
-    "headword": "run",
-    "partOfSpeech": "verb",
-    "definition": "to manage or be in charge of a business or activity",
-    "pronunciationIpa": "/rʌn/",
-    "examples": ["She runs a small bakery near the station."],
-    "collocations": ["run a business", "run a meeting"],
-    "topic": "work",
-    "difficulty": "intermediate",
-    "rank": 120
-  }
-]
-```
-
-`lexicon:import` validates every entry (class-validator) and fails on duplicate keys. It upserts by `key` and archives Senses whose key is no longer in any file. Run it after every Lexicon change, locally and as part of deploy.
+The Admin loads the Lexicon straight into the database, locally and in the deployed Supabase project ([ADR 0007](adr/0007-lexicon-loaded-directly-into-database.md)). Fields and the import script: [lexicon-data.md](lexicon-data.md).
 
 ## Testing
 
@@ -130,7 +106,7 @@ Vitest + Supertest (the NestJS 12 defaults).
 
 - **GitHub Actions** on every PR and on `main`: `pnpm install --frozen-lockfile` → `lint` → `typecheck` → `test` → `test:e2e` (which migrates the CI database).
 - **Render** deploys `main` from `render.yaml` once CI passes (`autoDeployTrigger: checksPass`), region `singapore`:
-  - `web` service on the **free** plan: build `corepack pnpm install --frozen-lockfile && corepack pnpm build && corepack pnpm db:deploy`, start `NODE_ENV=production node dist/main`, health check `/v1/health`. The free plan has no pre-deploy command, so migrations run at the end of the build; on a paid plan they move to `preDeployCommand` (plus `pnpm lexicon:import` once it exists).
+  - `web` service on the **free** plan: build `corepack pnpm install --frozen-lockfile && corepack pnpm build && corepack pnpm db:deploy`, start `NODE_ENV=production node dist/main`, health check `/v1/health`. The free plan has no pre-deploy command, so migrations run at the end of the build; on a paid plan they move to `preDeployCommand`.
   - `worker` service *(later; paid plans only)*: same build, start `node dist/worker`.
   - `keyvalue` instance *(later)*: `maxmemoryPolicy: noeviction`, internal access only.
 

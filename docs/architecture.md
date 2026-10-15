@@ -52,7 +52,7 @@ Both boot the same `AppModule` graph; the worker uses an application context wit
 |---|---|---|
 | `auth` | Supabase JWT guard, `@CurrentLearner()` | — |
 | `learners` | Profile: level, goal, Senses per Mission, default Mode, time zone, push token | FR-01 |
-| `lexicon` | Headword/Sense reads, search; `lexicon:import` CLI | FR-03, [ADR 0004](adr/0004-lexicon-curated-as-files-in-repo.md) |
+| `lexicon` | Headword/Sense reads, search (the Admin loads the data, [ADR 0007](adr/0007-lexicon-loaded-directly-into-database.md)) | FR-03 |
 | `personal-senses` | Learner's own list; AI draft → Learner confirm | BR-11, AC-12 |
 | `missions` | Generation, lifecycle (Open → Completed / Abandoned), completion check, situation hints | FR-02, BR-01/02/05/08/10 |
 | `submissions` | Upload URLs, creating Submissions, status, deletion | FR-04/05, FR-12 |

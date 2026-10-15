@@ -43,12 +43,14 @@ A Learner is **onboarded** once `self_assessed_level` and `time_zone` are both s
 | `origin` | enum `lexicon` · `learner` |
 | `owner_learner_id` | NULL for Lexicon Senses; set for Learner-owned Senses |
 | `verification` | enum `admin_curated` · `learner_confirmed` · `draft` |
-| `lexicon_key` | stable key from the Lexicon file (e.g. `run.v.manage`), UNIQUE where not null |
+| `lexicon_key` | permanent key (e.g. `run.v.manage`), plain UNIQUE (NULLs allowed) so imports can `ON CONFLICT (lexicon_key)`; required when `origin = 'lexicon'` ([lexicon-data.md](lexicon-data.md)) |
 | `part_of_speech`, `definition` | required |
 | `pronunciation_ipa` | nullable; shown only when present (FR-03) |
 | `examples`, `collocations` | `text[]` |
 | `topic`, `difficulty`, `rank` | `difficulty` uses the level enum; `rank` orders New picks |
-| `archived_at` | set when a Sense leaves the Lexicon files; never hard-deleted |
+| `archived_at` | set by the Admin to retire a Sense; never hard-deleted |
+
+Every column the Admin doesn't fill (`id`, `origin`, `verification`, `created_at`, `updated_at`) has a database default, so the Lexicon loads with plain SQL ([ADR 0007](adr/0007-lexicon-loaded-directly-into-database.md)).
 
 Constraints (raw SQL migration): `CHECK ((origin = 'lexicon') = (owner_learner_id IS NULL))`, `CHECK (origin = 'learner' OR verification = 'admin_curated')`.
 
@@ -120,5 +122,5 @@ Constraint: `CREATE UNIQUE INDEX one_open_mission ON mission (learner_id) WHERE 
 
 - **Drafts** live on the device ([ADR 0005](adr/0005-drafts-live-on-device-only.md)).
 - **Milestones** are derived at read time from XP, Streak and status counts. Add a table only once milestones need awarded-at state.
-- **Admin users**: the Admin works through repo files and the import command ([ADR 0004](adr/0004-lexicon-curated-as-files-in-repo.md)).
+- **Admin users**: the Admin loads the Lexicon directly into the database ([ADR 0007](adr/0007-lexicon-loaded-directly-into-database.md)).
 - **Placement test results**: the optional assessment (PRD §4.2) is post-MVP; `self_assessed_level` covers AC-01.

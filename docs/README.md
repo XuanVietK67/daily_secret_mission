@@ -12,7 +12,8 @@ Backend design for the MVP described in the PRD ([VI](../Daily_Secret_Mission_PR
 6. [api.md](api.md): REST conventions and the endpoint outline.
 7. [privacy.md](privacy.md): data inventory, processors, deletion, release blockers.
 8. [project-setup.md](project-setup.md): repo layout, env, local dev, testing, CI/CD, conventions.
-
+9. [lexicon-data.md](lexicon-data.md): the fields the Admin fills and how to load the Lexicon.
+10. [roadmap.md](roadmap.md): the MVP as phases, one feature per PR, and which acceptance criteria each covers.
 ## Decisions (ADRs)
 
 | # | Decision |
@@ -20,9 +21,10 @@ Backend design for the MVP described in the PRD ([VI](../Daily_Secret_Mission_PR
 | [0001](adr/0001-sense-is-the-unit-of-learning.md) | Sense, not Headword, is the unit of learning |
 | [0002](adr/0002-supabase-as-infrastructure-only.md) | Supabase as infrastructure only; NestJS owns all logic |
 | [0003](adr/0003-async-evaluation-on-bullmq-worker.md) | Evaluation runs async on a BullMQ worker |
-| [0004](adr/0004-lexicon-curated-as-files-in-repo.md) | Lexicon is curated as files in the repo |
+| [0004](adr/0004-lexicon-curated-as-files-in-repo.md) | ~~Lexicon is curated as files in the repo~~ (superseded by 0007) |
 | [0005](adr/0005-drafts-live-on-device-only.md) | Drafts live on the device only |
 | [0006](adr/0006-review-ladder-over-fsrs.md) | Fixed review ladder over FSRS/SM-2 |
+| [0007](adr/0007-lexicon-loaded-directly-into-database.md) | Lexicon is loaded directly into the database |
 
 ## Stack at a glance
 
