@@ -35,6 +35,57 @@ model Learner {
   timeZone          String?            @map("time_zone")
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  ownedSenses       Sense[]
 
   @@map("learner")
+}
+
+enum SenseOrigin {
+  lexicon
+  learner
+
+  @@map("sense_origin")
+}
+
+enum SenseVerification {
+  admin_curated
+  learner_confirmed
+  draft
+
+  @@map("sense_verification")
+}
+
+model Headword {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  text           String
+  normalizedText String  @unique @map("normalized_text")
+  senses         Sense[]
+
+  @@map("headword")
+}
+
+/// Every column the Admin doesn't fill has a database default, so the Lexicon loads with plain SQL (ADR 0007).
+model Sense {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  headwordId       String             @map("headword_id") @db.Uuid
+  headword         Headword           @relation(fields: [headwordId], references: [id])
+  origin           SenseOrigin        @default(lexicon)
+  ownerLearnerId   String?            @map("owner_learner_id") @db.Uuid
+  ownerLearner     Learner?           @relation(fields: [ownerLearnerId], references: [id], onDelete: Restrict)
+  verification     SenseVerification  @default(admin_curated)
+  lexiconKey       String?            @unique @map("lexicon_key")
+  partOfSpeech     String             @map("part_of_speech")
+  definition       String
+  pronunciationIpa String?            @map("pronunciation_ipa")
+  examples         String[]
+  collocations     String[]           @default([])
+  topic            String?
+  difficulty       SelfAssessedLevel?
+  rank             Int?
+  archivedAt       DateTime?          @map("archived_at") @db.Timestamptz
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([headwordId])
+  @@map("sense")
 }
