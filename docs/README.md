@@ -28,7 +28,7 @@ Backend design for the MVP described in the PRD ([VI](../Daily_Secret_Mission_PR
 
 ## Stack at a glance
 
-TypeScript · Node 24 · NestJS · class-validator · Prisma · Supabase (Postgres, Storage, Auth) · BullMQ + Redis · Render (API + worker + Key Value) · OpenAI speech-to-text · Claude evaluation · Expo client.
+TypeScript · Node 22 · NestJS · class-validator · Prisma · Supabase (Postgres, Storage, Auth) · BullMQ + Redis · Render (API + worker + Key Value) · OpenAI speech-to-text · Claude evaluation · Expo client.
 
 ## Open before release
 

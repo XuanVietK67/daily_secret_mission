@@ -12,7 +12,7 @@ daily_secret_mission/
 │   ├── schema.prisma
 │   └── migrations/
 ├── prisma.config.ts            # migrate uses DIRECT_URL; loads .env.test when NODE_ENV=test
-├── supabase/                   # local stack config (`pnpm supabase start`)
+├── supabase/                   # local stack config (`npx supabase start`)
 ├── src/
 │   ├── main.ts                 # HTTP entrypoint
 │   ├── worker.ts               # BullMQ worker entrypoint (no HTTP) (later: evaluation feature)
@@ -68,25 +68,25 @@ Prisma 7: `schema.prisma` has no URL; `prisma.config.ts` gives migrations `DIREC
 
 | Script | Does |
 |---|---|
-| `pnpm start:dev` / `pnpm start:worker:dev` | API / worker *(later)* with watch mode |
-| `pnpm build` | `nest build` |
-| `pnpm start` / `pnpm start:worker` | `node dist/main` / `node dist/worker` *(later)* |
-| `pnpm lint` / `pnpm format` / `pnpm typecheck` | oxlint (type-aware) / Prettier / `tsc --noEmit` |
-| `pnpm test` / `pnpm test:e2e` | Vitest unit / e2e |
-| `pnpm db:migrate` / `pnpm db:deploy` | `prisma migrate dev` / `prisma migrate deploy` |
+| `npm run start:dev` / `npm run start:worker:dev` | API / worker *(later)* with watch mode |
+| `npm run build` | `nest build` |
+| `npm start` / `npm run start:worker` | `node dist/main` / `node dist/worker` *(later)* |
+| `npm run lint` / `npm run format` / `npm run typecheck` | oxlint (type-aware) / Prettier / `tsc --noEmit` |
+| `npm test` / `npm run test:e2e` | Vitest unit / e2e |
+| `npm run db:migrate` / `npm run db:deploy` | `prisma migrate dev` + `prisma generate` (Prisma 7 no longer generates on migrate) / `prisma migrate deploy` |
 
-`postinstall` runs `prisma generate`. pnpm only runs dependency build scripts listed under `allowBuilds` in `pnpm-workspace.yaml`; approve new ones with `pnpm approve-builds`.
+`postinstall` runs `prisma generate`.
 
 ## Local development
 
-Prerequisites: Node 24 LTS (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json#packageManager`), Docker. The Supabase CLI is a devDependency.
+Prerequisites: Node 22 LTS (`.nvmrc`) with its bundled npm, Docker. The Supabase CLI is a devDependency.
 
-1. `pnpm install`.
-2. Auth needs an asymmetric key locally, or its JWKS stays empty: run `pnpm supabase gen signing-key --algorithm ES256` and save the printed key **inside a JSON array** as `supabase/signing_keys.json` (gitignored).
-3. `pnpm supabase start` runs local Postgres, Auth and Storage.
+1. `npm ci`.
+2. Auth needs an asymmetric key locally, or its JWKS stays empty: run `npx supabase gen signing-key --algorithm ES256` and save the printed key **inside a JSON array** as `supabase/signing_keys.json` (gitignored).
+3. `npx supabase start` runs local Postgres, Auth and Storage.
 4. Copy `.env.example` to `.env` and to `.env.test`; in `.env.test` set `NODE_ENV=test`, `LOG_LEVEL=silent` and point both database URLs at a separate database (e.g. `…:54322/dsm_test`). `prisma migrate deploy` creates it on first run.
-5. `pnpm db:migrate`, then `pnpm start:dev`. Swagger UI is at `http://localhost:3000/docs`.
-6. To call `/v1/me` by hand, sign up a user against local Auth (`POST http://127.0.0.1:54321/auth/v1/signup` with the publishable key from `pnpm supabase status`) and send its `access_token` as a Bearer token.
+5. `npm run db:migrate`, then `npm run start:dev`. Swagger UI is at `http://localhost:3000/docs`.
+6. To call `/v1/me` by hand, sign up a user against local Auth (`POST http://127.0.0.1:54321/auth/v1/signup` with the publishable key from `npx supabase status`) and send its `access_token` as a Bearer token.
 
 When the worker lands, local dev also needs Redis: `docker run -d --name dsm-redis -p 6379:6379 redis:7 --maxmemory-policy noeviction`.
 
@@ -104,9 +104,9 @@ Vitest + Supertest (the NestJS 12 defaults).
 
 ## CI/CD
 
-- **GitHub Actions** on every PR and on `main`: `pnpm install --frozen-lockfile` → `lint` → `typecheck` → `test` → `test:e2e` (which migrates the CI database).
+- **GitHub Actions** on every PR and on `main`: `npm ci` → `lint` → `typecheck` → `test` → `test:e2e` (which migrates the CI database).
 - **Render** deploys `main` from `render.yaml` once CI passes (`autoDeployTrigger: checksPass`), region `singapore`:
-  - `web` service on the **free** plan: build `corepack pnpm install --frozen-lockfile && corepack pnpm build && corepack pnpm db:deploy`, start `NODE_ENV=production node dist/main`, health check `/v1/health`. The free plan has no pre-deploy command, so migrations run at the end of the build; on a paid plan they move to `preDeployCommand`.
+  - `web` service on the **free** plan: build `npm ci && npm run build && npm run db:deploy`, start `NODE_ENV=production node dist/main`, health check `/v1/health`. The free plan has no pre-deploy command, so migrations run at the end of the build; on a paid plan they move to `preDeployCommand`.
   - `worker` service *(later; paid plans only)*: same build, start `node dist/worker`.
   - `keyvalue` instance *(later)*: `maxmemoryPolicy: noeviction`, internal access only.
 
@@ -120,7 +120,7 @@ Vitest + Supertest (the NestJS 12 defaults).
 
 - **Words.** Code, tables, routes and logs use [CONTEXT.md](../CONTEXT.md) terms: `Sense`, not `Word`; `Submission`, not `Attempt`. When a new domain concept shows up, add it to the glossary first.
 - **Branches.** `feat/<short-name>` for features, `fixBug/<short-name>` for fixes.
-- **Before committing.** Run `pnpm lint && pnpm typecheck`. Never commit `.env` or secrets. Never use `--no-verify`.
+- **Before committing.** Run `npm run lint && npm run typecheck`. Never commit `.env` or secrets. Never use `--no-verify`.
 - **Migrations.** Never edit an applied migration. Partial indexes and CHECK constraints are hand-written SQL appended to the generated migration (`prisma migrate dev --create-only`, edit, then `prisma migrate dev`). Every new table also gets `ENABLE ROW LEVEL SECURITY` with no policies, which keeps Supabase's Data API off it ([ADR 0002](adr/0002-supabase-as-infrastructure-only.md)).
 - **Rules.** A rule that must never break (one Open Mission, no double XP, one Streak row per day) is a database constraint first and app code second.
 - **Decisions.** Hard-to-reverse, surprising trade-offs get an ADR in `docs/adr/` (format: a short title plus 1–3 sentences).

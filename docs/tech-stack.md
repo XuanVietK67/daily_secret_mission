@@ -7,7 +7,7 @@ Every choice below was made for one constraint: **one developer shipping an MVP*
 | Concern | Choice | Why |
 |---|---|---|
 | Language | **TypeScript** (strict) | Same language as the Expo client; one toolchain. |
-| Runtime | **Node.js 24 LTS**, **pnpm** | Current Active LTS. pnpm is fast and strict about undeclared dependencies. |
+| Runtime | **Node.js 22 LTS**, **npm** | Pinned by `.nvmrc` and `package.json#engines`. npm ships with Node, so there is nothing extra to install on CI or Render. |
 | HTTP framework | **NestJS** | Opinionated modules give the codebase a predictable shape; first-class integrations for BullMQ, Swagger, config, throttling and health checks. |
 | Validation | **class-validator + class-transformer** (global `ValidationPipe`) | Idiomatic NestJS DTOs; `@nestjs/swagger` reads them to produce OpenAPI. |
 | API contract | **REST + OpenAPI** via `@nestjs/swagger` (CLI plugin on) | The Expo app consumes a client generated from the OpenAPI spec (e.g. `openapi-typescript`), so the API stays the single source of truth. |
