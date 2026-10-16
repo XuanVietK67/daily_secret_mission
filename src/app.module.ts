@@ -8,6 +8,7 @@ import { type Env, validateEnv } from './config/env.js';
 import { ErrorFilter, validationFailed } from './error.filter.js';
 import { HealthController } from './health.controller.js';
 import { LearnersModule } from './learners/learners.module.js';
+import { LexiconModule } from './lexicon/lexicon.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
@@ -41,6 +42,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PrismaModule,
     AuthModule,
     LearnersModule,
+    LexiconModule,
   ],
   controllers: [HealthController],
   providers: [
