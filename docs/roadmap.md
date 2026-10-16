@@ -31,7 +31,7 @@ The backend MVP (PRD §6.1) as a sequence of phases. Each phase ships one capabi
 
 Config and env validation, Supabase JWT guard, `GET`/`PATCH /v1/me`, health, error filter, logging, CI, Render web service.
 
-### 1. Lexicon
+### 1. Lexicon ✅
 
 Senses exist in the database and can be read.
 
