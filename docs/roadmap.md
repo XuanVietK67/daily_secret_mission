@@ -48,7 +48,7 @@ A Learner gets a Mission of N Targets and can abandon it.
 
 - `mission`, `target`, `learner_sense` tables; the `one_open_mission` partial unique index; `UNIQUE (mission_id, sense_id)`.
 - Generation as [domain-rules.md](domain-rules.md#mission-generation-fr-02-br-01-br-02-ac-02-ac-03) describes: quota split and slot filling as pure functions. Personal slots stay empty until Phase 9; the shortfall rule covers them.
-- `POST /v1/missions` (`409 MISSION_ALREADY_OPEN`, `422 ONBOARDING_REQUIRED`), `GET /v1/missions/current`, `GET /v1/missions/:id`, `POST /v1/missions/:id/abandon` (unfinished Targets' Senses become Due today).
+- `POST /v1/missions` (`409 MISSION_ALREADY_OPEN`, `422 ONBOARDING_REQUIRED`), `GET /v1/missions/current`, `GET /v1/missions/:id`, `POST /v1/missions/:id/abandon` (unfinished Targets' Senses without a due date become Due the day after the Mission started).
 - A helper that turns "now" into the Learner's local date; every later phase uses it.
 - Tunables: `sourceRatio`, `reviewMaxShare`, `modeMinutes`.
 

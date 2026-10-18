@@ -74,6 +74,7 @@ A row exists once a Sense has been a Target at least once. A Lexicon Sense with 
 | `learner_id`, `mode` | |
 | `status` | enum `open` · `completed` · `abandoned` |
 | `started_at`, `completed_at`, `abandoned_at` | |
+| `started_on` | local `date`; abandoning makes unfinished Senses Due the day after it |
 | `completed_on` | local `date`; drives the Streak |
 
 Constraint: `CREATE UNIQUE INDEX one_open_mission ON mission (learner_id) WHERE status = 'open'` (raw SQL; Prisma can't express partial indexes).
@@ -83,7 +84,7 @@ Constraint: `CREATE UNIQUE INDEX one_open_mission ON mission (learner_id) WHERE 
 |---|---|
 | `mission_id`, `sense_id` | UNIQUE `(mission_id, sense_id)`: no Sense twice in one Mission (FR-02) |
 | `source` | enum `new` · `review` · `personal` |
-| `position` | display order |
+| `position` | display order: Review, then Personal, then New |
 | `state` | enum `pending` · `passed` · `needs_correction` · `corrected` (see [domain-rules.md](domain-rules.md#target-states)) |
 
 ### `submission`
