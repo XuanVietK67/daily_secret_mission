@@ -42,7 +42,7 @@ Senses exist in the database and can be read.
 
 **Done when** the [lexicon-data.md](lexicon-data.md) import script runs against the local database and a Sense reads back through Swagger.
 
-### 2. Missions
+### 2. Missions ✅
 
 A Learner gets a Mission of N Targets and can abandon it.
 
