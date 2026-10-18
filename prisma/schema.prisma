@@ -36,6 +36,8 @@ model Learner {
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz
   ownedSenses       Sense[]
+  missions          Mission[]
+  progress          LearnerSense[]
 
   @@map("learner")
 }
@@ -85,7 +87,91 @@ model Sense {
   archivedAt       DateTime?          @map("archived_at") @db.Timestamptz
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  targets          Target[]
+  progress         LearnerSense[]
 
   @@index([headwordId])
   @@map("sense")
+}
+
+enum LearningStatus {
+  new
+  learning
+  needs_practice
+  proficient
+
+  @@map("learning_status")
+}
+
+/// A Learner's progress on one Sense. The row exists once the Sense has been a Target; no row means New.
+model LearnerSense {
+  learnerId       String         @map("learner_id") @db.Uuid
+  learner         Learner        @relation(fields: [learnerId], references: [id])
+  senseId         String         @map("sense_id") @db.Uuid
+  sense           Sense          @relation(fields: [senseId], references: [id])
+  status          LearningStatus @default(new)
+  reviewStep      Int            @default(0) @map("review_step")
+  /// Local date; NULL = not scheduled.
+  dueOn           DateTime?      @map("due_on") @db.Date
+  lastPractisedAt DateTime?      @map("last_practised_at") @db.Timestamptz
+
+  @@id([learnerId, senseId])
+  @@map("learner_sense")
+}
+
+enum MissionStatus {
+  open
+  completed
+  abandoned
+
+  @@map("mission_status")
+}
+
+/// At most one Open Mission per Learner: the one_open_mission partial unique index (raw SQL).
+model Mission {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  learnerId   String        @map("learner_id") @db.Uuid
+  learner     Learner       @relation(fields: [learnerId], references: [id])
+  mode        MissionMode
+  status      MissionStatus @default(open)
+  startedAt   DateTime      @default(now()) @map("started_at") @db.Timestamptz
+  startedOn   DateTime      @map("started_on") @db.Date
+  completedAt DateTime?     @map("completed_at") @db.Timestamptz
+  completedOn DateTime?     @map("completed_on") @db.Date
+  abandonedAt DateTime?     @map("abandoned_at") @db.Timestamptz
+  targets     Target[]
+
+  @@map("mission")
+}
+
+enum TargetSource {
+  new
+  review
+  personal
+
+  @@map("target_source")
+}
+
+enum TargetState {
+  pending
+  passed
+  needs_correction
+  corrected
+
+  @@map("target_state")
+}
+
+model Target {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  missionId String       @map("mission_id") @db.Uuid
+  mission   Mission      @relation(fields: [missionId], references: [id])
+  senseId   String       @map("sense_id") @db.Uuid
+  sense     Sense        @relation(fields: [senseId], references: [id])
+  source    TargetSource
+  /// Display order: Review, then Personal, then New.
+  position  Int
+  state     TargetState  @default(pending)
+
+  @@unique([missionId, senseId])
+  @@map("target")
 }
