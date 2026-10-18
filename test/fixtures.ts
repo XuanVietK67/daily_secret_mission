@@ -31,6 +31,43 @@ export async function lexiconSense(
   });
 }
 
+/** A Learner who finished onboarding: level `intermediate`, time zone `Asia/Ho_Chi_Minh`, 5 Senses per Mission. */
+export function onboardedLearner(
+  prisma: PrismaService,
+  id: string = randomUUID(),
+  overrides: Partial<Prisma.LearnerUncheckedCreateInput> = {},
+) {
+  const data = {
+    selfAssessedLevel: 'intermediate',
+    timeZone: 'Asia/Ho_Chi_Minh',
+    ...overrides,
+  } as const;
+  return prisma.learner.upsert({
+    where: { id },
+    create: { ...data, id },
+    update: data,
+  });
+}
+
+/** A Lexicon Sense the Learner has met before, Due on `dueOn` (a local date). */
+export async function dueSense(
+  prisma: PrismaService,
+  learnerId: string,
+  dueOn: Date,
+) {
+  const sense = await lexiconSense(prisma);
+  await prisma.learnerSense.create({
+    data: {
+      learnerId,
+      senseId: sense.id,
+      status: 'learning',
+      reviewStep: 1,
+      dueOn,
+    },
+  });
+  return sense;
+}
+
 /** A Learner-owned Sense; creates the owning Learner if needed. */
 export async function learnerSense(
   prisma: PrismaService,

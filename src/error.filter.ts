@@ -25,15 +25,13 @@ export class ErrorFilter implements ExceptionFilter {
         typeof body === 'object'
           ? (body as { code?: string; details?: unknown })
           : {};
-      res
-        .status(status)
-        .json({
-          error: {
-            code: code ?? HttpStatus[status] ?? 'ERROR',
-            message: exception.message,
-            details,
-          },
-        });
+      res.status(status).json({
+        error: {
+          code: code ?? HttpStatus[status] ?? 'ERROR',
+          message: exception.message,
+          details,
+        },
+      });
       return;
     }
 
@@ -44,26 +42,22 @@ export class ErrorFilter implements ExceptionFilter {
       message?: string;
     };
     if (typeof httpError.status === 'number' && httpError.expose === true) {
-      res
-        .status(httpError.status)
-        .json({
-          error: {
-            code: HttpStatus[httpError.status] ?? 'ERROR',
-            message: httpError.message,
-          },
-        });
+      res.status(httpError.status).json({
+        error: {
+          code: HttpStatus[httpError.status] ?? 'ERROR',
+          message: httpError.message,
+        },
+      });
       return;
     }
 
     this.logger.error(exception);
-    res
-      .status(500)
-      .json({
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Internal server error',
-        },
-      });
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error',
+      },
+    });
   }
 }
 
