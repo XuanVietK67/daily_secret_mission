@@ -9,6 +9,7 @@ import { ErrorFilter, validationFailed } from './error.filter.js';
 import { HealthController } from './health.controller.js';
 import { LearnersModule } from './learners/learners.module.js';
 import { LexiconModule } from './lexicon/lexicon.module.js';
+import { MissionsModule } from './missions/missions.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
@@ -43,6 +44,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     AuthModule,
     LearnersModule,
     LexiconModule,
+    MissionsModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -3,7 +3,7 @@ import {
   type AuthLearner,
   CurrentLearner,
 } from '../auth/current-learner.decorator.js';
-import { SenseParamsDto } from './dto/sense-params.dto.js';
+import { IdParamsDto } from '../id-params.dto.js';
 import { SenseDto } from './dto/sense.dto.js';
 import { LexiconService } from './lexicon.service.js';
 
@@ -15,7 +15,7 @@ export class LexiconController {
   @Get(':id')
   get(
     @CurrentLearner() learner: AuthLearner,
-    @Param() { id }: SenseParamsDto,
+    @Param() { id }: IdParamsDto,
   ): Promise<SenseDto> {
     return this.lexicon.getSense(learner.id, id);
   }

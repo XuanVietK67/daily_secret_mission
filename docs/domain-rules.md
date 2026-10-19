@@ -7,15 +7,15 @@ How the PRD's business rules map to concrete backend behaviour. Terms follow [CO
 `POST /v1/missions` fails with `409` if the Learner already has an Open Mission. Otherwise it picks **N** = `learner.senses_per_mission` Targets:
 
 1. **Quotas.** Split N by `sourceRatio` (new 0.6 · review 0.3 · personal 0.1) with the largest-remainder method; ties go to personal, then review, then new. N=5 → 3 new · 1 review · 1 personal. N=3 → 2 new · 1 review · 0 personal.
-2. **Review slots** take Due Senses (`due_on <= today`): Needs practice first, then the oldest `due_on`. Extra Due Senses may take over New slots, up to `reviewMaxShare × N` in total, so review never crowds out all new material (PRD §13).
+2. **Review slots** take Due Senses (`due_on <= today`) that are not archived: Needs practice first, then the oldest `due_on`. Extra Due Senses may take over New slots, up to `floor(reviewMaxShare × N)` in total, so review never crowds out all new material (PRD §13).
 3. **Personal slots** take the Learner's Personal Senses that are not `draft`, not Proficient and not already picked; never-practised first, then the least recently practised.
-4. **New slots** take Lexicon Senses the Learner has no progress row for, not archived, matching the Learner's level (falling back to an adjacent level), ordered by `rank`.
-5. **Shortfall.** An empty Personal slot goes to Review if more Senses are Due, otherwise to New (AC-03). An empty Review slot goes to New. If the Lexicon runs dry, the least recently practised Senses fill in.
+4. **New slots** take Lexicon Senses the Learner has no progress row for, not archived, ordered by `rank`: the Learner's level first, then one level up, then one level down, never skipping a level (basic → intermediate · intermediate → advanced → basic · advanced → intermediate).
+5. **Shortfall.** An empty Personal slot goes to Review if more Senses are Due, otherwise to New (AC-03). An empty Review slot goes to New. An empty New slot goes to any Senses still Due, even past `reviewMaxShare`: the cap protects new material, and there is none left. Senses that are not Due never fill in early: that would fight the review ladder.
 6. If fewer than N suitable Senses exist at all, the Mission is created with fewer Targets. It is never padded with unsuitable ones (AC-03).
 7. A Due Sense is tagged `review` even if it is also on the Personal list. No Sense appears twice (DB unique `(mission_id, sense_id)`). Two Senses of one Headword are allowed ([ADR 0001](adr/0001-sense-is-the-unit-of-learning.md)).
 8. Creating the Mission upserts a `learner_sense` row (`new`, step 0) for each Target.
 
-**Mission Mode** changes only the guidance and hint style. It never drops a Target (BR-01).
+**Mission Mode** changes only the guidance and hint style. It never drops a Target (BR-01). The Mission carries its Mode's expected `minutes: { min, max }` from `modeMinutes`, so the app never hardcodes them.
 
 ## Situation hints (BR-10)
 
@@ -58,7 +58,7 @@ Completing a Mission, in the same transaction:
 - inserts `streak_day (learner_id, completed_on)` `ON CONFLICT DO NOTHING`;
 - awards Mission XP.
 
-**Abandoning** (`POST /v1/missions/:id/abandon`) sets `abandoned`. Every Target still `pending` or `needs_correction` has its Sense's `due_on` set to today, so it comes back as Review (BR-08, AC-11). Nothing is deleted.
+**Abandoning** (`POST /v1/missions/:id/abandon`) sets `abandoned`. Every Target still `pending` or `needs_correction` keeps its Sense's `due_on` if it has one; otherwise `due_on` becomes the day after the Mission's `started_on`. So the Sense comes back as Review from the next local day on (BR-08, AC-11), never in a Mission started the same day, and abandoning never pushes a due date later. Nothing is deleted.
 
 A system error never changes Target states (BR-05).
 
@@ -80,7 +80,7 @@ Only **Practice** verdicts move Learning Status and the Review Step. Correction 
 
 - `appropriate`: `due_on = d + ladder[step]`, then `step = min(step + 1, last)`.
 - `needs_improvement`: `step = 0`, `due_on = d + ladder[0]`.
-- Abandoned or unfinished: `due_on = today`, step unchanged.
+- Abandoned: `due_on = COALESCE(due_on, started_on + 1)`, step unchanged.
 
 A Sense is **Due** when `due_on <= today` in the Learner's time zone.
 

@@ -46,6 +46,10 @@ _Avoid_: duration, difficulty
 A Sense assigned to one Mission, tagged with its Source: New, Review or Personal.
 _Avoid_: target word, mission word
 
+**Source**:
+Where a Target was drawn from when its Mission was created: New (a Lexicon Sense never given to the Learner before), Review (a Due Sense) or Personal (the Learner's own list). It says where the Target came from, not whether the Learner has practised the Sense: a Sense left unpractised in an Abandoned Mission comes back as Review.
+_Avoid_: type, kind, category
+
 **Submission**:
 One recording (or typed fallback) the Learner sends against a Mission, optionally with a Journal; each is evaluated on its own. A Mission can collect many.
 _Avoid_: attempt, answer, bài làm

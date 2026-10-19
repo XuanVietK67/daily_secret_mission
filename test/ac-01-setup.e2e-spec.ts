@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createTestApp } from './app.js';
+import { lexiconSense } from './fixtures.js';
 
 describe('AC-01 setup', () => {
   let app: INestApplication;
@@ -45,6 +47,33 @@ describe('AC-01 setup', () => {
       .expect(200);
 
     expect(res.body).toMatchObject({ ...choices, onboarded: true });
+  });
+
+  it('then generates a Mission from those choices, without a placement test', async () => {
+    const prisma = app.get(PrismaService);
+    for (let i = 0; i < 3; i++) await lexiconSense(prisma);
+    const auth = await token();
+    await request(app.getHttpServer())
+      .patch('/v1/me')
+      .auth(auth, { type: 'bearer' })
+      .send({
+        selfAssessedLevel: 'basic',
+        sensesPerMission: 3,
+        defaultMode: 'quick',
+        timeZone: 'Asia/Ho_Chi_Minh',
+      })
+      .expect(200);
+
+    const res = await request(app.getHttpServer())
+      .post('/v1/missions')
+      .auth(auth, { type: 'bearer' })
+      .expect(201);
+
+    expect(res.body).toMatchObject({
+      mode: 'quick',
+      minutes: { min: 3, max: 5 },
+    });
+    expect(res.body.targets).toHaveLength(3);
   });
 
   it.each([
